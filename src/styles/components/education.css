@@ -1,0 +1,88 @@
+/* Education & Certifications Styles */
+.education-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-8);
+  margin-top: var(--space-4);
+}
+
+.education-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.column-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.education-cards,
+.certifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.education-card,
+.cert-card {
+  padding: var(--space-5);
+}
+
+.edu-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.edu-period {
+  color: var(--accent-primary);
+}
+
+.edu-degree {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.edu-institution {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.edu-details {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.cert-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.cert-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.cert-category {
+  color: var(--accent-cyan);
+}
+
+.cert-title {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.cert-check-icon {
+  color: var(--accent-emerald);
+  flex-shrink: 0;
+}

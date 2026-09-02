@@ -1,0 +1,100 @@
+/* Contact Styles */
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+}
+
+.contact-card-title {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.contact-channels,
+.contact-profiles {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+}
+
+.contact-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.contact-entry:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.contact-entry-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contact-entry-label {
+  color: var(--text-tertiary);
+}
+
+.contact-value {
+  color: var(--text-primary);
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.contact-value:hover {
+  color: var(--accent-primary);
+}
+
+.contact-value-plain {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.profile-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.profile-link-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.profile-link-card:hover {
+  border-color: var(--border-active);
+  color: var(--text-primary);
+  background-color: var(--bg-elevated);
+}
+
+.profile-link-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.profile-link-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  display: block;
+}
+
+.text-emerald {
+  color: var(--accent-emerald);
+}
