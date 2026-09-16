@@ -7,7 +7,7 @@ export function ExperienceSection() {
   return (
     <section id="experience" className="section">
       <div className="site-container">
-        <div className="section-header">
+        <div className="section-header reveal-item">
           <span className="section-label">Leadership & Involvement</span>
           <div className="section-title">
             <h2>Experience & Leadership</h2>
@@ -17,7 +17,7 @@ export function ExperienceSection() {
           </p>
         </div>
 
-        <div className="timeline-container">
+        <div className="timeline-container reveal-item reveal-stagger-1">
           {experienceData.map((item, index) => (
             <TimelineItem
               key={item.id}

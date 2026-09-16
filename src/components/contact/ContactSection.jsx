@@ -11,7 +11,7 @@ export function ContactSection() {
   return (
     <section id="contact" className="section">
       <div className="site-container">
-        <div className="section-header">
+        <div className="section-header reveal-item">
           <span className="section-label">Get in Touch</span>
           <div className="section-title">
             <h2>Contact & Links</h2>
@@ -21,7 +21,7 @@ export function ContactSection() {
           </p>
         </div>
 
-        <div className="contact-grid">
+        <div className="contact-grid reveal-item reveal-stagger-1">
           {/* Direct Channels */}
           <div className="contact-channels card-surface">
             <h3 className="contact-card-title">Direct Contact</h3>

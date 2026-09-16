@@ -1,6 +1,7 @@
 import React from 'react';
 import { PortfolioProvider } from './context/PortfolioContext';
 import { useActiveSection } from './hooks/useActiveSection';
+import { useScrollReveal } from './hooks/useScrollReveal';
 import { Header } from './components/layout/Header';
 import { StatusBanner } from './components/layout/StatusBanner';
 import { Footer } from './components/layout/Footer';
@@ -13,8 +14,10 @@ import { EducationSection } from './components/education/EducationSection';
 import { ContactSection } from './components/contact/ContactSection';
 import { CommandPalette } from './components/command-palette/CommandPalette';
 import { TelemetryModal } from './components/easter-egg/TelemetryModal';
+import { PixelPet } from './components/pet/PixelPet';
 
 function PortfolioContent() {
+  useScrollReveal();
   const activeSection = useActiveSection(
     ['hero', 'projects', 'skills', 'experience', 'education', 'contact'],
     120
@@ -33,6 +36,9 @@ function PortfolioContent() {
         <ContactSection />
       </main>
       <Footer />
+
+      {/* Minimalist Pixel Pet Companion */}
+      <PixelPet activeSection={activeSection} />
 
       {/* Global Context-Driven Interactive Overlays */}
       <ProjectInspector />

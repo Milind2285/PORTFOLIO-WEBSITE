@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, ExternalLink, Cpu, GitBranch, Layers, Activity, Compass, ArrowRight } from 'lucide-react';
+import { ArrowUpRight, ExternalLink, Activity, Compass, ArrowRight, GitBranch } from 'lucide-react';
 import { GithubIcon } from '../icons/Icons';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { AudioPlayground } from './AudioPlayground';
@@ -8,6 +8,7 @@ export function ProjectCard({ project }) {
   const { activeSkillFilter, toggleSkillFilter, setSelectedProject, isBlueprintMode } = usePortfolio();
   const [showAudioPlayground, setShowAudioPlayground] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [hoveredStageIdx, setHoveredStageIdx] = useState(null);
 
   const isMatched = activeSkillFilter
     ? project.technologies.some(
@@ -22,9 +23,17 @@ export function ProjectCard({ project }) {
     <article
       className={`project-card card-surface ${isMatched ? 'filter-matched' : ''} ${isBlueprintMode ? 'blueprint-card' : ''} ${isHovered ? 'card-hovered-active' : ''}`}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        setHoveredStageIdx(null);
+      }}
       onFocus={() => setIsHovered(true)}
-      onBlur={() => setIsHovered(false)}
+      onBlur={() => {
+        setIsHovered(false);
+        setHoveredStageIdx(null);
+      }}
+      tabIndex={0}
+      aria-label={`${project.title} - ${project.category}`}
     >
       <div className="project-card-header">
         <div className="project-meta">
@@ -39,39 +48,49 @@ export function ProjectCard({ project }) {
           title="Inspect Architecture & Execution Flow"
         >
           <span className="text-xs mono">Inspect</span>
-          <ArrowUpRight size={15} />
+          <ArrowUpRight size={14} />
         </button>
       </div>
 
-      {/* Living Architecture Signal Ticker Preview */}
+      <p className="project-summary">{project.summary}</p>
+
+      {/* Progressive Architecture Discovery Flow on Hover/Focus */}
       {steps.length > 0 && (
-        <div className="living-pipeline-ticker" aria-label="Architecture Signal Stream Preview">
-          <div className="ticker-label-bar">
-            <span className="ticker-label mono text-xs">
-              <span className="live-stream-dot"></span> Pipeline Flow
+        <div className={`card-discovery-flow ${isHovered ? 'revealed' : ''}`}>
+          <div className="flow-discovery-header">
+            <span className="flow-label mono text-xs">
+              <span className="flow-signal-pip"></span> Architecture Pipeline
             </span>
-            <span className="ticker-hint mono text-xs text-muted">Hover to trace</span>
+            {hoveredStageIdx !== null && (
+              <span className="flow-stage-role mono text-xs">
+                {steps[hoveredStageIdx].role}
+              </span>
+            )}
           </div>
 
-          <div className="ticker-nodes-strip">
-            {steps.map((s, idx) => (
-              <React.Fragment key={s.label}>
-                <span
-                  className="ticker-node-chip mono text-xs"
-                  title={`${s.label}: ${s.role}`}
-                >
-                  {s.label}
-                </span>
-                {idx < steps.length - 1 && (
-                  <ArrowRight size={10} className="ticker-arrow text-muted" />
-                )}
-              </React.Fragment>
-            ))}
+          <div className="flow-discovery-nodes">
+            {steps.map((s, idx) => {
+              const isHoveredStage = idx === hoveredStageIdx;
+
+              return (
+                <React.Fragment key={s.label}>
+                  <span
+                    className={`discovery-node-pill mono text-xs ${isHoveredStage ? 'active-node' : ''}`}
+                    onMouseEnter={() => setHoveredStageIdx(idx)}
+                    onMouseLeave={() => setHoveredStageIdx(null)}
+                    title={`${s.label}: ${s.role}`}
+                  >
+                    {s.label}
+                  </span>
+                  {idx < steps.length - 1 && (
+                    <span className="discovery-arrow" aria-hidden="true">→</span>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
         </div>
       )}
-
-      <p className="project-summary">{project.summary}</p>
 
       {/* Blueprint Mode Technical Annotation Overlay (Strictly Factual) */}
       {isBlueprintMode && (
@@ -88,14 +107,14 @@ export function ProjectCard({ project }) {
             <div className="spec-row">
               <span className="spec-key mono text-xs">Pipeline Stages:</span>
               <span className="spec-val mono text-xs">
-                {steps.map(s => s.label).join(' → ')}
+                {steps.map((s) => s.label).join(' → ')}
               </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Highlights */}
+      {/* Verified Highlights */}
       <ul className="project-highlights">
         {project.bullets.map((bullet, idx) => (
           <li key={idx} className="project-highlight-item">
@@ -166,7 +185,7 @@ export function ProjectCard({ project }) {
           onClick={() => setSelectedProject(project)}
           className="btn btn-ghost btn-sm inspect-text-btn"
         >
-          View Pipeline Flow →
+          Inspect Architecture →
         </button>
       </div>
     </article>

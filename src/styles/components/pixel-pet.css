@@ -1,0 +1,260 @@
+/* ==========================================================================
+   Pixel Turtle Pet Companion Styles
+   Autonomous voxel creature dock with visible platform walking
+   ========================================================================== */
+
+.pixel-pet-dock {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: auto;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .pixel-pet-dock {
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Trigger Button
+   -------------------------------------------------------------------------- */
+.pixel-pet-trigger {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  outline: none;
+  position: relative;
+}
+
+.pixel-pet-trigger:focus-visible {
+  outline: 2px dashed var(--accent-primary);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Pixel Turtle SVG Runway Renderer
+   -------------------------------------------------------------------------- */
+.pixel-turtle-svg {
+  display: block;
+  width: 144px;
+  height: 69px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
+  overflow: visible;
+}
+
+@media (max-width: 640px) {
+  .pixel-turtle-svg {
+    width: 112px;
+    height: 54px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Autonomous Movement & Mover Group
+   -------------------------------------------------------------------------- */
+.turtle-mover {
+  will-change: transform;
+}
+
+/* Tiny Hop / Shell Bounce on Happy */
+.pixel-pet-trigger.state-happy .turtle-creature {
+  animation: turtleHop 350ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes turtleHop {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+  75% {
+    transform: translateY(-1px);
+  }
+}
+
+/* Secret Laptop typing animation */
+.pixel-pet-trigger.state-laptop .turtle-laptop {
+  animation: laptopTyping 380ms ease-in-out infinite alternate;
+}
+
+@keyframes laptopTyping {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-0.6px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Floating Particles (Heart, Z's, Sound Waves, Alert)
+   -------------------------------------------------------------------------- */
+
+.turtle-particles-heart {
+  animation: floatHeart 1.4s ease-out forwards;
+  transform-origin: center bottom;
+}
+
+@keyframes floatHeart {
+  0% {
+    opacity: 0;
+    transform: translateY(2px) scale(0.8);
+  }
+  25% {
+    opacity: 1;
+    transform: translateY(0) scale(1.05);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.95);
+  }
+}
+
+.turtle-particles-sleep {
+  animation: floatSleepZ 2.8s ease-in-out infinite;
+}
+
+@keyframes floatSleepZ {
+  0% {
+    opacity: 0.3;
+    transform: translateY(1px) translateX(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-2px) translateX(1px);
+  }
+  100% {
+    opacity: 0.2;
+    transform: translateY(-4px) translateX(2px);
+  }
+}
+
+.turtle-particles-audio {
+  animation: pulseAudio 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseAudio {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.turtle-particles-alert {
+  animation: alertSparkle 600ms ease-out forwards;
+}
+
+@keyframes alertSparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Retro Pixel Speech Bubble
+   -------------------------------------------------------------------------- */
+.pet-speech-bubble {
+  position: relative;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.65rem;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: petBubbleIn 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.speech-pip {
+  position: absolute;
+  bottom: -5px;
+  right: 28px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--border-default);
+}
+
+.speech-pip::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -4px;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid var(--bg-secondary);
+}
+
+@keyframes petBubbleIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Prefers Reduced Motion Overrides
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .pixel-pet-trigger,
+  .pixel-turtle-svg,
+  .turtle-mover,
+  .turtle-creature,
+  .turtle-laptop,
+  .turtle-particles-heart,
+  .turtle-particles-sleep,
+  .turtle-particles-audio,
+  .turtle-particles-alert,
+  .pet-speech-bubble {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}

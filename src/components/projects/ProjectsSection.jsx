@@ -18,7 +18,7 @@ export function ProjectsSection() {
   return (
     <section id="projects" className="section">
       <div className="site-container">
-        <div className="section-header">
+        <div className="section-header reveal-item">
           <span className="section-label">Engineering Projects</span>
           <div className="section-title">
             <h2>Featured Applications & Systems</h2>
@@ -33,7 +33,7 @@ export function ProjectsSection() {
 
         {/* Filter State Banner */}
         {activeSkillFilter && (
-          <div className="projects-filter-status">
+          <div className="projects-filter-status reveal-item">
             <div className="filter-status-text">
               <Filter size={14} className="text-accent" />
               <span>
@@ -50,7 +50,7 @@ export function ProjectsSection() {
         )}
 
         {/* Project Grid */}
-        <div className="projects-grid">
+        <div className="projects-grid reveal-item reveal-stagger-1">
           {filteredProjects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}

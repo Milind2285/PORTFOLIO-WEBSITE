@@ -35,7 +35,7 @@ export const projectsData = [
           desc: "High-speed LLM inference for real-time prompt completion."
         },
         {
-          label: "Interview Questions / Candidate Evaluation",
+          label: "Candidate Evaluation",
           role: "Output & Feedback",
           desc: "Generates tailored interview questions and AI-assisted performance evaluations."
         }

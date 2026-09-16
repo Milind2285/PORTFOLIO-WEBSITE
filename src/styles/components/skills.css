@@ -1,38 +1,182 @@
-/* Skills Section Styles */
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-4);
-  margin-top: var(--space-4);
+/* Skills Section & Direct Relationship Visualization */
+.skills-section {
+  position: relative;
 }
 
-.skill-category-card {
+/* Relationship Connection Bar */
+.skills-relationship-bar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast);
 }
 
-.skill-category-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
+.skills-relationship-bar:hover {
+  border-color: var(--border-default);
+}
+
+.relationship-anchors-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
 }
 
-.skill-category-name::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
+.relationship-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  margin-right: var(--space-1);
+}
+
+.signal-flow-pip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+}
+
+.project-anchor-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.25rem 0.55rem;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.project-anchor-btn:hover {
+  border-color: var(--border-active);
+  color: var(--text-primary);
+}
+
+.project-anchor-btn.anchor-active,
+.project-anchor-btn.anchor-linked {
+  background-color: var(--accent-subtle);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.anchor-icon {
+  flex-shrink: 0;
+}
+
+/* Dynamic Trace Line */
+.relationship-trace-line {
+  padding: 0.35rem 0.6rem;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.trace-msg {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-size: 0.725rem;
+}
+
+.trace-connector {
+  color: var(--accent-primary);
+  letter-spacing: -1px;
+}
+
+.trace-target-badge {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.trace-foundation {
+  color: var(--text-secondary);
+}
+
+/* Clean, Open Skills Matrix Layout (No generic repetitive boxes) */
+.skills-matrix-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6) var(--space-8);
+}
+
+.skill-category-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.category-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.category-bullet {
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background-color: var(--accent-cyan);
 }
 
-.skill-badges-wrap {
+.category-heading {
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.category-badges-flow {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+/* Skill Badges & Connection Pips */
+.skill-matrix-pill {
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.skill-connection-pip {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--accent-cyan);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.skill-matrix-pill.skill-anchor-highlight {
+  background-color: var(--accent-subtle);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  font-weight: 600;
+  transform: translateY(-1px);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+}
+
+.skill-matrix-pill.skill-anchor-dimmed {
+  opacity: 0.35;
+  filter: grayscale(50%);
 }

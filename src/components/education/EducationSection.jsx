@@ -6,7 +6,7 @@ export function EducationSection() {
   return (
     <section id="education" className="section">
       <div className="site-container">
-        <div className="section-header">
+        <div className="section-header reveal-item">
           <span className="section-label">Academic Background & Credentials</span>
           <div className="section-title">
             <h2>Education & Certifications</h2>
@@ -16,7 +16,7 @@ export function EducationSection() {
           </p>
         </div>
 
-        <div className="education-grid">
+        <div className="education-grid reveal-item reveal-stagger-1">
           {/* Education Ledger */}
           <div className="education-column">
             <h3 className="column-heading">

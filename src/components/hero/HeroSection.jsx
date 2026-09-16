@@ -20,7 +20,7 @@ export function HeroSection() {
   return (
     <section id="hero" className="hero-section">
       <div className="site-container hero-inner">
-        {/* Left Column: Headline, Bio & CTAs */}
+        {/* Left Column: Headline, Bio & Highlights */}
         <div className="hero-left-column">
           <div className="hero-badge-row">
             <span className="hero-status-tag">
@@ -35,18 +35,18 @@ export function HeroSection() {
             <p className="hero-bio">{profileData.about}</p>
           </div>
 
-          {/* Quick Tech Highlights */}
-          <div className="hero-focus-matrix">
-            <div className="focus-cell">
-              <span className="focus-label">
-                <Layers size={13} /> Full-Stack Engineering
+          {/* Quick Focus Areas - Clean, Hairline Presentation */}
+          <div className="hero-focus-areas">
+            <div className="focus-row">
+              <span className="focus-title mono text-xs">
+                <Layers size={12} className="text-accent" /> Full-Stack Engineering:
               </span>
-              <div className="focus-tags">
+              <div className="focus-tags-inline">
                 {['Java', 'Spring Boot', 'React', 'REST APIs', 'MySQL'].map((tech) => (
                   <button
                     key={tech}
                     onClick={() => handleFilterClick(tech)}
-                    className="hero-tech-btn"
+                    className="hero-tech-chip"
                     title={`Filter projects by ${tech}`}
                   >
                     {tech}
@@ -55,16 +55,16 @@ export function HeroSection() {
               </div>
             </div>
 
-            <div className="focus-cell">
-              <span className="focus-label">
-                <Cpu size={13} /> Machine Learning & Audio
+            <div className="focus-row">
+              <span className="focus-title mono text-xs">
+                <Cpu size={12} className="text-cyan" /> ML & Signal Analysis:
               </span>
-              <div className="focus-tags">
+              <div className="focus-tags-inline">
                 {['Python', 'TensorFlow', 'CNN', 'Librosa', 'SciPy', 'Groq API'].map((tech) => (
                   <button
                     key={tech}
                     onClick={() => handleFilterClick(tech)}
-                    className="hero-tech-btn"
+                    className="hero-tech-chip"
                     title={`Filter projects by ${tech}`}
                   >
                     {tech}
@@ -80,7 +80,7 @@ export function HeroSection() {
               onClick={() => handleScroll('projects')}
               className="btn btn-primary"
             >
-              Explore Projects <ArrowDown size={15} />
+              Explore Projects <ArrowDown size={14} />
             </button>
 
             <button
@@ -94,12 +94,12 @@ export function HeroSection() {
               href={`mailto:${profileData.contact.email}`}
               className="btn btn-ghost"
             >
-              <Mail size={15} /> Contact
+              <Mail size={14} /> Contact
             </a>
           </div>
         </div>
 
-        {/* Right Column: Interactive Signal & Flow Schematic */}
+        {/* Right Column: Refined Interactive Signal Flow */}
         <div className="hero-right-column">
           <HeroSignalFlow />
         </div>

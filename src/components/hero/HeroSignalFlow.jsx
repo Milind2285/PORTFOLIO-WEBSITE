@@ -1,123 +1,133 @@
 import React, { useState } from 'react';
-import { Play, ArrowRight, Layers, Activity, Cpu, Sparkles } from 'lucide-react';
+import { Layers, Activity, Cpu, ArrowUpRight } from 'lucide-react';
 import { usePortfolio } from '../../context/PortfolioContext';
 import { projectsData } from '../../data/projects';
 
 export function HeroSignalFlow() {
-  const { setSelectedProject, setActiveSkillFilter } = usePortfolio();
-  const [activeChannel, setActiveChannel] = useState(0);
+  const { setSelectedProject } = usePortfolio();
+  const [activeProjectIdx, setActiveProjectIdx] = useState(0);
+  const [activeStepIdx, setActiveStepIdx] = useState(0);
+  const [hoveredStepIdx, setHoveredStepIdx] = useState(null);
 
-  const channels = [
+  const projects = [
     {
-      id: "ai-interview",
+      id: "ai-interview-simulator",
       projectRef: projectsData[0],
-      domain: "Full-Stack AI Engine",
+      name: "AI Interview Simulator",
+      category: "Full-Stack & AI",
       icon: Layers,
-      color: "var(--accent-primary)",
-      nodes: ["React UI", "Spring Boot", "REST APIs", "Groq LLM", "Evaluation"]
+      steps: projectsData[0].architecture.steps
     },
     {
-      id: "audio-dsp",
+      id: "audio-comparison-tool",
       projectRef: projectsData[1],
-      domain: "Audio DSP Pipeline",
+      name: "Audio Comparison Tool",
+      category: "Audio DSP",
       icon: Activity,
-      color: "var(--accent-cyan)",
-      nodes: ["Audio Input", "Librosa", "MFCC Extraction", "Similarity"]
+      steps: projectsData[1].architecture.steps
     },
     {
-      id: "vision-cnn",
+      id: "plant-disease-prediction",
       projectRef: projectsData[2],
-      domain: "Vision CNN Classifier",
+      name: "Plant Disease Prediction System",
+      category: "Computer Vision",
       icon: Cpu,
-      color: "var(--accent-emerald)",
-      nodes: ["Leaf Image", "Preprocessing", "Augmentation", "CNN Model", "Diagnosis"]
+      steps: projectsData[2].architecture.steps
     }
   ];
 
-  const currentChannel = channels[activeChannel];
+  const currentProject = projects[activeProjectIdx];
+  const currentSteps = currentProject.steps;
+  const displayedStepIndex = hoveredStepIdx ?? activeStepIdx;
+  const currentStep = currentSteps[displayedStepIndex] || currentSteps[0];
 
-  const handleInspectProject = (project) => {
-    if (project) {
-      setSelectedProject(project);
+  const handleSelectProject = (idx) => {
+    setActiveProjectIdx(idx);
+    setActiveStepIdx(0);
+    setHoveredStepIdx(null);
+  };
+
+  const handleInspect = () => {
+    if (currentProject.projectRef) {
+      setSelectedProject(currentProject.projectRef);
     }
   };
 
   return (
-    <div className="hero-signal-schematic" aria-label="Interactive Systems Signal Flow">
-      <div className="schematic-header">
-        <div className="schematic-title-group">
-          <span className="signal-live-beacon"></span>
-          <span className="mono text-xs font-semibold">Systems Architecture Flow</span>
-        </div>
-        <span className="text-xs mono text-muted">Hover or select system track</span>
-      </div>
-
-      {/* 3 Interactive System Tracks */}
-      <div className="channel-track-selector" role="tablist">
-        {channels.map((ch, idx) => {
-          const isSelected = idx === activeChannel;
-          const Icon = ch.icon;
+    <div className="hero-signal-panel" aria-label="Interactive Systems Architecture Flow">
+      {/* 1. Project Selector Tabs */}
+      <div className="signal-project-tabs" role="tablist" aria-label="Select Project Pipeline">
+        {projects.map((proj, idx) => {
+          const isSelected = idx === activeProjectIdx;
+          const Icon = proj.icon;
 
           return (
             <button
-              key={ch.id}
+              key={proj.id}
               role="tab"
               aria-selected={isSelected}
-              onClick={() => setActiveChannel(idx)}
-              onMouseEnter={() => setActiveChannel(idx)}
-              className={`channel-pill ${isSelected ? 'active' : ''}`}
+              id={`system-tab-${idx}`}
+              onClick={() => handleSelectProject(idx)}
+              className={`project-tab-btn ${isSelected ? 'active' : ''}`}
             >
-              <Icon size={12} className="channel-icon" />
-              <span>{ch.domain}</span>
+              <Icon size={12} className="tab-icon" aria-hidden="true" />
+              <span className="tab-label">{proj.name}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Live Signal Bus & Pipeline Nodes */}
-      <div className="schematic-viewport">
-        <div className="signal-bus-rail">
-          <div className="rail-glow-line"></div>
-          <div className="signal-packet-pulse"></div>
-        </div>
+      {/* 2. Compact, Non-Overlapping Pipeline Flow */}
+      <div className="signal-pipeline-flow" role="tablist" aria-label="Pipeline Stages">
+        {currentSteps.map((step, idx) => {
+          const isSelected = idx === displayedStepIndex;
 
-        <div className="signal-nodes-row">
-          {currentChannel.nodes.map((node, nIdx) => {
-            const isLast = nIdx === currentChannel.nodes.length - 1;
+          return (
+            <React.Fragment key={step.label}>
+              <button
+                role="tab"
+                aria-selected={isSelected}
+                onClick={() => {
+                  setActiveStepIdx(idx);
+                  setHoveredStepIdx(null);
+                }}
+                onMouseEnter={() => setHoveredStepIdx(idx)}
+                onMouseLeave={() => setHoveredStepIdx(null)}
+                onFocus={() => setActiveStepIdx(idx)}
+                className={`pipeline-node-pill mono text-xs ${isSelected ? 'active-node' : ''}`}
+                title={`${step.label}: ${step.role}`}
+              >
+                <span className="node-num">0{idx + 1}</span>
+                <span className="node-text">{step.label}</span>
+              </button>
 
-            return (
-              <React.Fragment key={node}>
-                <div className="schematic-node">
-                  <span className="node-stage-index mono text-xs">0{nIdx + 1}</span>
-                  <span className="node-stage-label mono">{node}</span>
-                </div>
-
-                {!isLast && (
-                  <div className="node-bridge" aria-hidden="true">
-                    <span className="bridge-wire"></span>
-                    <ArrowRight size={12} className="bridge-arrow" />
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
+              {idx < currentSteps.length - 1 && (
+                <span className="pipeline-flow-arrow" aria-hidden="true">→</span>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
 
-      {/* Quick Action Footer */}
-      <div className="schematic-footer">
-        <div className="schematic-project-meta">
-          <span className="meta-label text-xs mono text-muted">Associated Project:</span>
-          <span className="meta-name font-semibold text-xs">{currentChannel.projectRef.title}</span>
+      {/* 3. One Active Stage Readout */}
+      <div className="signal-active-stage">
+        <div className="stage-meta-row">
+          <div className="stage-meta-left">
+            <span className="stage-counter mono text-xs">
+              Stage 0{displayedStepIndex + 1}/{currentSteps.length}
+            </span>
+            <span className="stage-role-tag mono text-xs">{currentStep.role}</span>
+          </div>
+          <button
+            onClick={handleInspect}
+            className="stage-inspect-link mono text-xs"
+            title="Open detailed architecture modal"
+          >
+            <span>Inspect Architecture</span>
+            <ArrowUpRight size={12} />
+          </button>
         </div>
-
-        <button
-          onClick={() => handleInspectProject(currentChannel.projectRef)}
-          className="btn btn-secondary btn-sm mono text-xs schematic-action-btn"
-        >
-          <span>Inspect Architecture</span>
-          <ArrowRight size={12} />
-        </button>
+        <p className="stage-desc-text">{currentStep.desc}</p>
       </div>
     </div>
   );
