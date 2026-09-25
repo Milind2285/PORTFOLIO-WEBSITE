@@ -6,12 +6,6 @@ const STORAGE_KEY_INTERACTIONS = 'milind_turtle_interactions';
 const STORAGE_KEY_SECTIONS = 'milind_turtle_visited_sections';
 const STORAGE_KEY_SECRET = 'milind_turtle_secret_unlocked';
 
-// Position offsets on platform runway (in CSS pixels, within 144px platform)
-// Position 0 = Left (near sprout, offset 0px)
-// Position 1 = Center (offset 25px)
-// Position 2 = Right (home dock, offset 50px)
-const POS_PX = [0, 25, 50];
-
 export function PixelPet({ activeSection = 'hero' }) {
   const { selectedProject, isCommandPaletteOpen, isTelemetryOpen } = usePortfolio();
 
@@ -23,61 +17,63 @@ export function PixelPet({ activeSection = 'hero' }) {
   const [isNearCursor, setIsNearCursor] = useState(false);
   const [lookDirection, setLookDirection] = useState('forward');
 
-  // Walking & Positioning state
-  const [currentPosIndex, setCurrentPosIndex] = useState(2); // Start at Right (home = 50px)
-  const [walkPx, setWalkPx] = useState(50);
-  const [walkDuration, setWalkDuration] = useState(2600);
+  // Walking & Translation Positioning state
+  const [positionX, setPositionX] = useState(42); // Start at Right home dock (42px)
+  const [directionScale, setDirectionScale] = useState(-1); // 1 = right, -1 = left
   const [isWalking, setIsWalking] = useState(false);
-  const [walkFrame, setWalkFrame] = useState(0);
-  const [facing, setFacing] = useState('left');
+  const [walkFrame, setWalkFrame] = useState(0); // 0 | 1 alternating leg stride
 
-  // Persistence & Discovery
-  const [interactionCount, setInteractionCount] = useState(0);
-  const [hasVisitedMultiple, setHasVisitedMultiple] = useState(false);
-  const [hasUnlockedSecret, setHasUnlockedSecret] = useState(false);
-
-  // Refs for timers & interaction tracking
-  const petDockRef = useRef(null);
-  const currentPosRef = useRef(2);
-  const facingRef = useRef('left');
-  const isWalkingRef = useRef(false);
-  const isUserInteractingRef = useRef(false);
-  const isHoveredRef = useRef(false);
-
-  const autonomousTimerRef = useRef(null);
-  const userCooldownTimerRef = useRef(null);
-  const walkStepIntervalRef = useRef(null);
-  const walkFinishTimerRef = useRef(null);
-  const blinkTimerRef = useRef(null);
-  const clickResetTimerRef = useRef(null);
-  const sleepNapTimerRef = useRef(null);
-
-  // Initialize persistence from localStorage
-  useEffect(() => {
+  // Persistence & Discovery initialized safely
+  const [interactionCount, setInteractionCount] = useState(() => {
     try {
-      const savedCount = parseInt(
+      return parseInt(
         localStorage.getItem(STORAGE_KEY_INTERACTIONS) ||
         localStorage.getItem('milind_pet_interactions') ||
         '0',
         10
       );
-      setInteractionCount(savedCount);
+    } catch {
+      return 0;
+    }
+  });
 
+  const [hasVisitedMultiple, setHasVisitedMultiple] = useState(() => {
+    try {
       const visited = JSON.parse(
         localStorage.getItem(STORAGE_KEY_SECTIONS) ||
         localStorage.getItem('milind_pet_visited_sections') ||
         '[]'
       );
-      if (visited.length >= 3) {
-        setHasVisitedMultiple(true);
-      }
-
-      const secretUnlocked = localStorage.getItem(STORAGE_KEY_SECRET) === 'true';
-      setHasUnlockedSecret(secretUnlocked);
+      return visited.length >= 3;
     } catch {
-      // Fallback gracefully
+      return false;
     }
-  }, []);
+  });
+
+  const [hasUnlockedSecret, setHasUnlockedSecret] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_SECRET) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  // Refs for animation frame loop, timers & interaction tracking
+  const petDockRef = useRef(null);
+  const characterRef = useRef(null);
+  const currentXRef = useRef(42);
+  const directionScaleRef = useRef(-1);
+  const isWalkingRef = useRef(false);
+  const isUserInteractingRef = useRef(false);
+  const isHoveredRef = useRef(false);
+
+  const rafIdRef = useRef(null);
+  const scheduleNextActionRef = useRef(null);
+  const autonomousTimerRef = useRef(null);
+  const userCooldownTimerRef = useRef(null);
+  const blinkTimerRef = useRef(null);
+  const clickResetTimerRef = useRef(null);
+  const sleepNapTimerRef = useRef(null);
 
   // Track visited sections
   useEffect(() => {
@@ -125,12 +121,8 @@ export function PixelPet({ activeSection = 'hero' }) {
 
   // Keep refs in sync
   useEffect(() => {
-    currentPosRef.current = currentPosIndex;
-  }, [currentPosIndex]);
-
-  useEffect(() => {
-    facingRef.current = facing;
-  }, [facing]);
+    directionScaleRef.current = directionScale;
+  }, [directionScale]);
 
   useEffect(() => {
     isWalkingRef.current = isWalking;
@@ -156,8 +148,141 @@ export function PixelPet({ activeSection = 'hero' }) {
   }, [petState]);
 
   // --------------------------------------------------------------------------
-  // Autonomous Action Handlers
+  // Autonomous Walking & Animation System
   // --------------------------------------------------------------------------
+
+  const performAutonomousWalk = useCallback(() => {
+    // Cancel any currently running animation frame
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+    const minX = 0;
+    const maxX = isMobile ? 40 : 54;
+    const currentX = currentXRef.current;
+
+    // Pick targetX at least 20px and at most 54px away to ensure clearly visible translation
+    let targetX;
+    let attempts = 0;
+    do {
+      targetX = Math.round(minX + Math.random() * (maxX - minX));
+      attempts++;
+    } while (Math.abs(targetX - currentX) < 20 && attempts < 15);
+
+    // If still too close, step toward whichever side has room
+    if (Math.abs(targetX - currentX) < 20) {
+      targetX = currentX > (minX + maxX) / 2 ? minX + 4 : maxX - 4;
+    }
+
+    // Direction:
+    // If targetX > currentX -> direction = right -> directionScale = 1
+    // If targetX < currentX -> direction = left -> directionScale = -1 (flipped)
+    const newDirScale = targetX > currentX ? 1 : -1;
+    setDirectionScale(newDirScale);
+    directionScaleRef.current = newDirScale;
+
+    const distance = Math.abs(targetX - currentX);
+    // Slow natural turtle crawling speed (~16 px/sec)
+    const speed = 16;
+    const duration = Math.round((distance / speed) * 1000); // 1500ms - 3400ms
+
+    const startX = currentX;
+    const startTime = performance.now();
+
+    setIsWalking(true);
+    isWalkingRef.current = true;
+    setPetState('walk');
+
+    const animateWalk = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Continuous linear motion across platform
+      const curX = startX + (targetX - startX) * progress;
+      setPositionX(curX);
+      currentXRef.current = curX;
+
+      // Alternating leg cadence every 220ms
+      const stepPhase = Math.floor(elapsed / 220) % 2;
+      setWalkFrame(stepPhase);
+
+      if (progress < 1 && isWalkingRef.current) {
+        rafIdRef.current = requestAnimationFrame(animateWalk);
+      } else {
+        // Target reached!
+        rafIdRef.current = null;
+        setPositionX(targetX);
+        currentXRef.current = targetX;
+        setIsWalking(false);
+        isWalkingRef.current = false;
+        setWalkFrame(0); // Return legs to neutral resting position
+        setPetState(getSectionMood());
+
+        // Wait 4-8s before next autonomous action
+        scheduleNextActionRef.current?.();
+      }
+    };
+
+    rafIdRef.current = requestAnimationFrame(animateWalk);
+  }, [getSectionMood]);
+
+  const performAutonomousLookAround = useCallback(() => {
+    // Glance in the opposite direction
+    const oppositeDir = -directionScaleRef.current;
+    setDirectionScale(oppositeDir);
+    setLookDirection('up');
+
+    setTimeout(() => {
+      if (!isUserInteractingRef.current) {
+        setDirectionScale(directionScaleRef.current);
+        setLookDirection('forward');
+      }
+      scheduleNextActionRef.current?.();
+    }, 2200);
+  }, []);
+
+  const performAutonomousCurious = useCallback(() => {
+    setPetState('curious');
+    setLookDirection('up');
+
+    setTimeout(() => {
+      if (!isUserInteractingRef.current) {
+        setPetState(getSectionMood());
+        setLookDirection('forward');
+      }
+      scheduleNextActionRef.current?.();
+    }, 1800);
+  }, [getSectionMood]);
+
+  const performAutonomousHappy = useCallback(() => {
+    setPetState('happy');
+
+    setTimeout(() => {
+      if (!isUserInteractingRef.current) {
+        setPetState(getSectionMood());
+      }
+      scheduleNextActionRef.current?.();
+    }, 1600);
+  }, [getSectionMood]);
+
+  const performAutonomousSleep = useCallback(() => {
+    setPetState('sleeping');
+
+    clearTimeout(sleepNapTimerRef.current);
+    sleepNapTimerRef.current = setTimeout(() => {
+      if (!isUserInteractingRef.current) {
+        setPetState('waking');
+        setTimeout(() => {
+          setPetState(getSectionMood());
+          scheduleNextActionRef.current?.();
+        }, 350);
+      } else {
+        scheduleNextActionRef.current?.();
+      }
+    }, 4800);
+  }, [getSectionMood]);
 
   const scheduleNextAction = useCallback((delayOverride) => {
     clearTimeout(autonomousTimerRef.current);
@@ -174,28 +299,28 @@ export function PixelPet({ activeSection = 'hero' }) {
         isTelemetryOpen
       ) {
         // Postpone check after a short rest
-        scheduleNextAction(3500);
+        scheduleNextActionRef.current?.(3500);
         return;
       }
 
       // Roll for autonomous action:
-      // WALK: 50%
-      // LOOK AROUND: 20%
-      // CURIOUS: 15%
-      // HAPPY: 10%
-      // SLEEP: 5%
+      // WALK: 60% (predominant action)
+      // LOOK AROUND: 16%
+      // CURIOUS: 12%
+      // HAPPY: 8%
+      // SLEEP: 4%
       const r = Math.random();
 
-      if (r < 0.50) {
-        // 1. WALK: Move 25px to 50px across platform
+      if (r < 0.60) {
+        // 1. WALK: Smoothly translate turtle across platform with walking legs
         performAutonomousWalk();
-      } else if (r < 0.70) {
-        // 2. LOOK AROUND: Look in opposite direction
+      } else if (r < 0.76) {
+        // 2. LOOK AROUND: Turn & glance in opposite direction
         performAutonomousLookAround();
-      } else if (r < 0.85) {
-        // 3. CURIOUS: Alert glance or look toward cursor
+      } else if (r < 0.88) {
+        // 3. CURIOUS: Alert glance or alert sparkle
         performAutonomousCurious();
-      } else if (r < 0.95) {
+      } else if (r < 0.96) {
         // 4. HAPPY: Tiny hop/bounce
         performAutonomousHappy();
       } else {
@@ -203,124 +328,35 @@ export function PixelPet({ activeSection = 'hero' }) {
         performAutonomousSleep();
       }
     }, delay);
-  }, [isCommandPaletteOpen, isTelemetryOpen]);
+  }, [
+    isCommandPaletteOpen,
+    isTelemetryOpen,
+    performAutonomousWalk,
+    performAutonomousLookAround,
+    performAutonomousCurious,
+    performAutonomousHappy,
+    performAutonomousSleep,
+  ]);
 
-  const performAutonomousWalk = useCallback(() => {
-    const currentPos = currentPosRef.current;
-    let nextPos;
-
-    if (currentPos === 2) {
-      // At Right: walk to Left (0, 50px) or Center (1, 25px)
-      nextPos = Math.random() < 0.5 ? 0 : 1;
-    } else if (currentPos === 0) {
-      // At Left: walk to Right (2, 50px) or Center (1, 25px)
-      nextPos = Math.random() < 0.5 ? 2 : 1;
-    } else {
-      // At Center: walk to Left (0) or Right (2)
-      nextPos = Math.random() < 0.5 ? 0 : 2;
-    }
-
-    const distanceUnits = Math.abs(nextPos - currentPos);
-    // Slow turtle speed: ~2.4s for 25px, ~3.6s for 50px
-    const duration = distanceUnits === 2 ? 3600 : 2400;
-
-    // Face the direction of motion
-    const nextFacing = nextPos < currentPos ? 'left' : 'right';
-    setFacing(nextFacing);
-
-    // Start walking
-    setPetState('walk');
-    setIsWalking(true);
-    setWalkDuration(duration);
-    setCurrentPosIndex(nextPos);
-    setWalkPx(POS_PX[nextPos]);
-
-    // Leg cadence interval (stepping every 300ms)
-    clearInterval(walkStepIntervalRef.current);
-    let step = 0;
-    walkStepIntervalRef.current = setInterval(() => {
-      step = step === 0 ? 1 : 0;
-      setWalkFrame(step);
-    }, 300);
-
-    // On arrival
-    clearTimeout(walkFinishTimerRef.current);
-    walkFinishTimerRef.current = setTimeout(() => {
-      clearInterval(walkStepIntervalRef.current);
-      setIsWalking(false);
-      setPetState(getSectionMood());
-
-      // Idle pause of 4–8 seconds before next autonomous action
-      scheduleNextAction();
-    }, duration);
-  }, [getSectionMood, scheduleNextAction]);
-
-  const performAutonomousLookAround = useCallback(() => {
-    // Turn in the opposite direction
-    const oppositeFacing = facingRef.current === 'left' ? 'right' : 'left';
-    setFacing(oppositeFacing);
-    setLookDirection('up');
-
-    setTimeout(() => {
-      if (!isUserInteractingRef.current) {
-        setFacing('left'); // return to default resting orientation
-        setLookDirection('forward');
-      }
-      scheduleNextAction();
-    }, 2200);
-  }, [scheduleNextAction]);
-
-  const performAutonomousCurious = useCallback(() => {
-    setPetState('curious');
-    setLookDirection('up');
-
-    setTimeout(() => {
-      if (!isUserInteractingRef.current) {
-        setPetState(getSectionMood());
-        setLookDirection('forward');
-      }
-      scheduleNextAction();
-    }, 1800);
-  }, [getSectionMood, scheduleNextAction]);
-
-  const performAutonomousHappy = useCallback(() => {
-    setPetState('happy');
-
-    setTimeout(() => {
-      if (!isUserInteractingRef.current) {
-        setPetState(getSectionMood());
-      }
-      scheduleNextAction();
-    }, 1600);
-  }, [getSectionMood, scheduleNextAction]);
-
-  const performAutonomousSleep = useCallback(() => {
-    setPetState('sleeping');
-
-    clearTimeout(sleepNapTimerRef.current);
-    sleepNapTimerRef.current = setTimeout(() => {
-      if (!isUserInteractingRef.current) {
-        setPetState('waking');
-        setTimeout(() => {
-          setPetState(getSectionMood());
-          scheduleNextAction();
-        }, 350);
-      } else {
-        scheduleNextAction();
-      }
-    }, 4800);
-  }, [getSectionMood, scheduleNextAction]);
-
-  // Start autonomous scheduler on mount
+  // Keep scheduleNextActionRef up to date
   useEffect(() => {
-    scheduleNextAction(4200);
-    return () => {
-      clearTimeout(autonomousTimerRef.current);
-      clearTimeout(walkFinishTimerRef.current);
-      clearInterval(walkStepIntervalRef.current);
-      clearTimeout(sleepNapTimerRef.current);
-    };
+    scheduleNextActionRef.current = scheduleNextAction;
   }, [scheduleNextAction]);
+
+  // Start autonomous scheduler on mount and clean up rAF on unmount
+  useEffect(() => {
+    scheduleNextActionRef.current?.(3800);
+    return () => {
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      clearTimeout(autonomousTimerRef.current);
+      clearTimeout(userCooldownTimerRef.current);
+      clearTimeout(sleepNapTimerRef.current);
+      clearTimeout(clickResetTimerRef.current);
+      clearTimeout(blinkTimerRef.current);
+    };
+  }, []);
 
   // --------------------------------------------------------------------------
   // User Interaction Priority & Cooldown
@@ -331,20 +367,25 @@ export function PixelPet({ activeSection = 'hero' }) {
     clearTimeout(autonomousTimerRef.current);
     clearTimeout(userCooldownTimerRef.current);
 
-    // If currently walking, stop walking cleanly at target position
+    // Cancel rAF loop immediately and freeze cleanly at current position
+    if (rafIdRef.current) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+
     if (isWalkingRef.current) {
       setIsWalking(false);
-      clearInterval(walkStepIntervalRef.current);
-      clearTimeout(walkFinishTimerRef.current);
+      isWalkingRef.current = false;
+      setWalkFrame(0);
       setPetState(getSectionMood());
     }
 
     userCooldownTimerRef.current = setTimeout(() => {
       isUserInteractingRef.current = false;
       // Resume autonomous activity after 3-5 seconds cooldown
-      scheduleNextAction(3500 + Math.random() * 1500);
+      scheduleNextActionRef.current?.(3500 + Math.random() * 1500);
     }, pauseDuration);
-  }, [getSectionMood, scheduleNextAction]);
+  }, [getSectionMood]);
 
   // Cursor Proximity Awareness
   useEffect(() => {
@@ -507,7 +548,8 @@ export function PixelPet({ activeSection = 'hero' }) {
   }
 
   // Calculate speech bubble horizontal position to follow turtle
-  const speechBubbleOffset = walkPx - 50;
+  // Home dock is at ~42px. When positionX changes, offset tracks the difference.
+  const speechBubbleOffset = positionX - 42;
 
   return (
     <aside
@@ -524,9 +566,6 @@ export function PixelPet({ activeSection = 'hero' }) {
           aria-live="polite"
           style={{
             transform: `translateX(${speechBubbleOffset}px)`,
-            transition: isWalking
-              ? `transform ${walkDuration}ms cubic-bezier(0.25, 1, 0.5, 1)`
-              : 'transform 200ms ease-out',
           }}
         >
           <span>{speechText}</span>
@@ -555,10 +594,10 @@ export function PixelPet({ activeSection = 'hero' }) {
           isBlinking={isBlinking}
           lookDirection={isHovered ? 'forward' : lookDirection}
           walkFrame={walkFrame}
-          walkPx={walkPx}
-          walkDuration={walkDuration}
+          positionX={positionX}
+          directionScale={directionScale}
           isWalking={isWalking}
-          facing={facing}
+          characterRef={characterRef}
         />
       </button>
     </aside>

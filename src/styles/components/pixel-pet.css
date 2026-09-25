@@ -46,30 +46,98 @@
 }
 
 /* --------------------------------------------------------------------------
-   Pixel Turtle SVG Runway Renderer
+   Pixel Turtle Stage & Platform Runway
    -------------------------------------------------------------------------- */
-.pixel-turtle-svg {
-  display: block;
+.pixel-pet-stage {
+  position: relative;
   width: 144px;
   height: 69px;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
   overflow: visible;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
 }
 
 @media (max-width: 640px) {
-  .pixel-turtle-svg {
+  .pixel-pet-stage {
     width: 112px;
     height: 54px;
   }
 }
 
-/* --------------------------------------------------------------------------
-   Autonomous Movement & Mover Group
-   -------------------------------------------------------------------------- */
-.turtle-mover {
+.turtle-platform-svg {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  overflow: visible;
+}
+
+/* Outermost Turtle Wrapper: moves and flips entire character */
+.pixel-turtle-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 28.7% 50%;
+  pointer-events: none;
   will-change: transform;
+}
+
+.turtle-sprite-svg,
+.pixel-turtle-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  overflow: visible;
+}
+
+/* --------------------------------------------------------------------------
+   Leg Walking & Stride Animation
+   -------------------------------------------------------------------------- */
+.pixel-turtle-wrapper.is-walking .turtle-leg-front {
+  animation: legStrideFront 360ms ease-in-out infinite alternate;
+}
+
+.pixel-turtle-wrapper.is-walking .turtle-leg-back {
+  animation: legStrideBack 360ms ease-in-out infinite alternate;
+}
+
+@keyframes legStrideFront {
+  0% {
+    transform: translateX(-3px);
+  }
+  100% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes legStrideBack {
+  0% {
+    transform: translateX(3px);
+  }
+  100% {
+    transform: translateX(-3px);
+  }
+}
+
+.pixel-turtle-wrapper.is-walking .turtle-creature {
+  animation: turtleWalkBob 180ms ease-in-out infinite alternate;
+}
+
+@keyframes turtleWalkBob {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-0.8px);
+  }
 }
 
 /* Tiny Hop / Shell Bounce on Happy */
@@ -243,18 +311,16 @@
    Prefers Reduced Motion Overrides
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .pixel-pet-trigger,
-  .pixel-turtle-svg,
-  .turtle-mover,
-  .turtle-creature,
-  .turtle-laptop,
+  .pixel-turtle-wrapper.is-walking .turtle-leg-front,
+  .pixel-turtle-wrapper.is-walking .turtle-leg-back,
+  .pixel-turtle-wrapper.is-walking .turtle-creature,
+  .pixel-pet-trigger.state-happy .turtle-creature,
+  .pixel-pet-trigger.state-laptop .turtle-laptop,
   .turtle-particles-heart,
   .turtle-particles-sleep,
   .turtle-particles-audio,
   .turtle-particles-alert,
   .pet-speech-bubble {
     animation: none !important;
-    transform: none !important;
-    transition: none !important;
   }
 }
